@@ -8,7 +8,7 @@ import android.content.*
 import android.content.pm.PackageManager
 import android.os.*
 import android.util.Log
-import android.widget.ArrayAdapter
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.*
@@ -16,6 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.*
 import ru.barinov.obdtesterapp.databinding.ActivityMainBinding
+import java.lang.Exception
 import java.security.Permission
 import java.text.DateFormat
 import java.util.*
@@ -75,16 +76,15 @@ class MainActivity : AppCompatActivity() {
         Log.d("@@@", "FILLDEX")
         val dexInput = binding.stringInput
         val date = DateFormat.getDateTimeInstance(
-            DateFormat.MEDIUM, DateFormat.MEDIUM
+            DateFormat.SHORT, DateFormat.SHORT
         ).format(System.currentTimeMillis())
         if(dexInput.text.isEmpty()){
-            dexInput.text = "$date"
+            dexInput.text = "$date : \n"
             bytes.forEach {
                 dexInput.text = "${dexInput.text} ${it.toHex()}"
             }
         } else{
-            dexInput.text = "${dexInput.text} \n \n"
-            dexInput.text = "${dexInput.text} $date"
+            dexInput.text = "${dexInput.text} \n $date \n"
             bytes.forEach {
                 dexInput.text = "${dexInput.text} ${it.toHex()}"
             }
@@ -95,16 +95,15 @@ class MainActivity : AppCompatActivity() {
         Log.d("@@@", "FILLB")
         val byteInput = binding.byteInput
         val date = DateFormat.getDateTimeInstance(
-          DateFormat.MEDIUM, DateFormat.MEDIUM
+          DateFormat.SHORT, DateFormat.SHORT
         ).format(System.currentTimeMillis())
         if(byteInput.text.isEmpty()){
-            byteInput.text = "$date"
+            byteInput.text = "$date : \n"
             bytes.forEach {
                 byteInput.text = "${byteInput.text} $it"
             }
         } else{
-            byteInput.text = "${byteInput.text} \n \n"
-            byteInput.text = "${byteInput.text} $date"
+            byteInput.text = "${byteInput.text} \n $date \n"
             bytes.forEach {
                 byteInput.text = "${byteInput.text} $it"
             }
@@ -142,15 +141,22 @@ class MainActivity : AppCompatActivity() {
             this.deviceAddr = deviceAddress
             deviceAddr?.let {
                 val device = bt.adapter.getRemoteDevice(it)
-                val uuid = UUID.randomUUID()
-                val socket = device.createRfcommSocketToServiceRecord(uuid)
+                val uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+                val socket = device.createInsecureRfcommSocketToServiceRecord(uuid)
+                try {
+                    socket.connect()
+                }catch (e: Exception){
+                    Toast.makeText(this, "CANT CONNECT", Toast.LENGTH_LONG).show()
+                }
+
                 source = SocketSource(socket, this)
                 source?.let { source->
                     Log.d("@@@", "SOURCE")
                     binding.sendButton.setOnClickListener {
                         Log.d("@@@", "ON SEND")
                         lifecycleScope.launchWhenStarted {
-                            source.outputByteFlow.emit(binding.byteInput.text.toString().toByteArray(Charsets.US_ASCII))
+                            val text = "${binding.output.text}\r"
+                            source.outputByteFlow.emit(text.toByteArray(Charsets.US_ASCII))
                         }
                     }
                     observeAnswers(source)
