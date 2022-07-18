@@ -10,14 +10,11 @@ import android.os.*
 import android.util.Log
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.*
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.*
 import ru.barinov.obdtesterapp.databinding.ActivityMainBinding
 import java.lang.Exception
-import java.security.Permission
 import java.text.DateFormat
 import java.util.*
 
@@ -67,26 +64,26 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launchWhenStarted {
             source.inputByteFlow.onEach {
                 fillBytes(it)
-                fillDex(it)
+                fillString(it)
             }.collect()
         }
     }
 
-    private fun fillDex(bytes: ByteArray) {
+    private fun fillString(bytes: ByteArray) {
         Log.d("@@@", "FILLDEX")
         val dexInput = binding.stringInput
         val date = DateFormat.getDateTimeInstance(
             DateFormat.SHORT, DateFormat.SHORT
         ).format(System.currentTimeMillis())
         if(dexInput.text.isEmpty()){
-            dexInput.text = "$date : \n"
+            dexInput.text = "$date: \n"
             bytes.forEach {
-                dexInput.text = "${dexInput.text} ${it.toHex()}"
+                dexInput.text = "${dexInput.text}${it.toInt().toChar()}"
             }
         } else{
-            dexInput.text = "${dexInput.text} \n $date \n"
+            dexInput.text = "${dexInput.text} \n $date: \n"
             bytes.forEach {
-                dexInput.text = "${dexInput.text} ${it.toHex()}"
+                dexInput.text = "${dexInput.text}${it.toInt().toChar()}"
             }
         }
     }
