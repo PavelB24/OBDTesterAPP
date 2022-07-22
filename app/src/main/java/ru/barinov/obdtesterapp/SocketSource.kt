@@ -52,10 +52,10 @@ class SocketSource(private val socket: BluetoothSocket, val context: Context) {
                 var readByte: Byte = 0
                 while (socket.isConnected && readByte > -1) {
                     Log.d("@@@", "read")
-                    val readUByte = input.read()
-                    readByte = readUByte.toByte()
+                    val readUByteOrEmpty = input.read()
+                    readByte = readUByteOrEmpty.toByte()
                     Log.d("@@@", readByte.toString())
-                    if (readUByte.toChar() == '>') {
+                    if (readUByteOrEmpty.toChar() == '>') {
                         readByte = -1
                         break
                     } else {
@@ -63,7 +63,7 @@ class SocketSource(private val socket: BluetoothSocket, val context: Context) {
                     }
                     Log.d("@@@", "END LOOP")
                 }
-                if(readByte.toInt() == -1){
+                if(localBuffer.isNotEmpty()){
                     sendToCommander(localBuffer)
                 }
             } catch (e: Exception) {
@@ -74,10 +74,9 @@ class SocketSource(private val socket: BluetoothSocket, val context: Context) {
     }
 
     private suspend fun sendToCommander(buffer: MutableList<Byte>) {
-        val filtered = buffer.filter { it.toInt() == 0 || it.toInt() == 13 }
+        val filtered = buffer.filter { it.toInt() != 13 }
         buffer.clear()
         inputByteFlow.emit(filtered.toByteArray())
-
     }
 
 }
