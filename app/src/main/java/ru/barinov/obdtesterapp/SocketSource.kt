@@ -46,8 +46,7 @@ class SocketSource(private val socket: BluetoothSocket, val context: Context) {
     Run this func only in coroutine or new thread
      */
     private suspend fun readData(job: CoroutineScope) {
-        val localBuffer = ByteBuffer.allocate(32)
-        var shown = false
+        val localBuffer = mutableListOf<Byte>()
         while (job.isActive) {
             try {
                 var readByte: Byte = 0
@@ -60,16 +59,9 @@ class SocketSource(private val socket: BluetoothSocket, val context: Context) {
                         readByte = -1
                         break
                     } else {
-                        localBuffer.put(readByte)
+                        localBuffer.add(readByte)
                     }
                     Log.d("@@@", "END LOOP")
-                }
-                withContext(Dispatchers.Main) {
-                    if(!shown){
-                        Toast.makeText(context, "EXIT", Toast.LENGTH_SHORT).show()
-                        shown = true
-                    }
-
                 }
                 if(readByte.toInt() == -1){
                     sendToCommander(localBuffer)
@@ -81,14 +73,11 @@ class SocketSource(private val socket: BluetoothSocket, val context: Context) {
 
     }
 
-    private suspend fun sendToCommander(buffer: ByteBuffer) {
-        val array = buffer.array()
-        withContext(Dispatchers.Main) {
-            Toast.makeText(context, array.size.toString(), Toast.LENGTH_LONG).show()
-        }
-        buffer.flip()
-        inputByteFlow.emit(array)
+    private suspend fun sendToCommander(buffer: MutableList<Byte>) {
+        val filtered = buffer.filter { it.toInt() == 0 || it.toInt() == 13 }
         buffer.clear()
+        inputByteFlow.emit(filtered.toByteArray())
+
     }
 
 }

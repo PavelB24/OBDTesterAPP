@@ -76,15 +76,10 @@ class MainActivity : AppCompatActivity() {
             DateFormat.SHORT, DateFormat.SHORT
         ).format(System.currentTimeMillis())
         if(dexInput.text.isEmpty()){
-            dexInput.text = "$date: \n"
-            bytes.forEach {
-                dexInput.text = "${dexInput.text}${it.toInt().toChar()}"
-            }
+            dexInput.text = "$date: \n ${bytes.decodeToString()}"
         } else{
-            dexInput.text = "${dexInput.text} \n $date: \n"
-            bytes.forEach {
-                dexInput.text = "${dexInput.text}${it.toInt().toChar()}"
-            }
+            dexInput.text = "${dexInput.text} \n $date: \n ${bytes.decodeToString()}"
+
         }
     }
 
