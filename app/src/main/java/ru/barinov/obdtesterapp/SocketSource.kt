@@ -82,12 +82,13 @@ class SocketSource(private val socket: BluetoothSocket, val context: Context) {
     }
 
     private suspend fun sendToCommander(buffer: ByteBuffer) {
-        val array = buffer.array()
-        withContext(Dispatchers.Main) {
-            Toast.makeText(context, array.size.toString(), Toast.LENGTH_LONG).show()
-        }
         buffer.flip()
-        inputByteFlow.emit(array)
+        val array = buffer.array()
+        val cc: Byte = 0
+        val filteredArray = array.filter {
+            it != cc
+        }.toByteArray()
+        inputByteFlow.emit(filteredArray)
         buffer.clear()
     }
 
