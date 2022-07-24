@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
             DateFormat.SHORT, DateFormat.SHORT
         ).format(System.currentTimeMillis())
         if (dexInput.text.isEmpty()) {
-            dexInput.text = "$date: \n  ${bytes.decodeToString()}"
+            dexInput.text = "$date: \n ${bytes.decodeToString()}"
         } else {
             dexInput.text = "${dexInput.text} \n $date: \n ${bytes.decodeToString()}"
         }
