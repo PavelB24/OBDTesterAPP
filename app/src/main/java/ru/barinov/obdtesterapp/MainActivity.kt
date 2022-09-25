@@ -12,7 +12,11 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.*
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import ru.barinov.obdtesterapp.databinding.ActivityMainBinding
 import java.lang.Exception
 import java.text.DateFormat
@@ -24,7 +28,9 @@ class MainActivity : AppCompatActivity() {
 
     private var deviceAddr: String? = null
 
-    private var source: SocketSource? = null
+    val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
+
+    private var source: BluetoothSource? = null
 
     private var requestBluetooth =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -60,7 +66,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun observeAnswers(source: SocketSource) {
+    private fun observeAnswers(source: BluetoothSource) {
         Log.d("@@@", "OBS")
         lifecycleScope.launchWhenStarted {
             source.inputByteFlow.onEach {
@@ -143,10 +149,12 @@ class MainActivity : AppCompatActivity() {
                     } catch (e: Exception) {
                         Toast.makeText(this, "CANT CONNECT", Toast.LENGTH_LONG).show()
                     }
-
-                    source = SocketSource(socket, this)
+                    source = BluetoothSource(socket)
                     source?.let { source ->
                         Log.d("@@@", "SOURCE")
+                        scope.launch {
+                            source.observeByteCommands(this)
+                        }
                         binding.sendButton.setOnClickListener {
                             Log.d("@@@", "ON SEND")
                             lifecycleScope.launchWhenStarted {

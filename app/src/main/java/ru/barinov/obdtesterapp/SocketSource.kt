@@ -7,9 +7,7 @@ import android.util.Log
 import android.widget.Toast
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import ru.barinov.obdtesterapp.Source
 import java.io.*
-import java.net.Socket
 import java.nio.ByteBuffer
 
 @SuppressLint("MissingPermission")
